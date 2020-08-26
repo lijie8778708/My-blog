@@ -1,0 +1,190 @@
+#include('./header.html',{active:'articles', title:'Manage Article'})
+<div id="app" class="row" v-cloak>
+    <loading :active.sync="isLoading" :can-cancel="true"></loading>
+    <div class="col-lg-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Manage Article</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="row p-b-10 m-l-10">
+                            <form class="form-inline" role="form">
+                                <div class="form-group">
+                                    <input v-model="search.title" type="text" class="form-control" placeholder="Title">
+                                </div>
+
+                                <select v-model="search.categories" class="form-control">
+                                    <option value="" selected>Type</option>
+                                    <option v-for="item in categories" :value="item.name">
+                                        {{ item.name }}
+                                    </option>
+                                </select>
+
+                                <select v-model="search.status" class="form-control">
+                                    <option value="" selected>Status</option>
+                                    <option value="publish">Published</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                                <button type="button" class="btn btn-success waves-effect waves-light m-l-10"
+                                        @click="load(1)">Search
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th width="35%">Title</th>
+                                    <th width="15%">Date</th>
+                                    <th>Views</th>
+                                    <th>Type</th>
+                                    <th width="8%">Status</th>
+                                    <th>Operation</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="item in articlePage.rows">
+                                    <td>
+                                        <a :href="'/admin/article/edit/' + item.cid">{{ item.title }}</a>
+                                    </td>
+                                    <td>{{ item.created | formatUnix }}</td>
+                                    <td>{{ item.hits }}</td>
+                                    <td>{{ item.categories }}</td>
+                                    <td>
+                                        <span v-show="item.status == 'publish'" class="label label-success">Published</span>
+                                        <span v-show="item.status == 'draft'" class="label label-default">Draft</span>
+                                    </td>
+                                    <td>
+                                        <a :href="'/admin/article/edit/' + item.cid"
+                                           class="btn btn-primary btn-sm waves-effect waves-light m-b-5">
+                                            <i class="fa fa-edit"></i> <span>Edit</span>
+                                        </a>
+                                        <a @click="deleteArticle(item.cid)" href="javascript:void(0)"
+                                           class="btn btn-danger btn-sm waves-effect waves-light m-b-5">
+                                            <i class="fa fa-trash-o"></i> <span>Remove</span>
+                                        </a>
+                                        <a v-show="item.status == 'publish'"
+                                           class="btn btn-warning btn-sm waves-effect waves-light m-b-5"
+                                           :href="'${site_url()}' + item.url"
+                                           target="_blank">
+                                            <i class="fa fa-rocket"></i> <span>Preview</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <ul class="pagination m-b-5 pull-right">
+                            <li v-if="articlePage.hasPrevPage">
+                                <a @click="load(articlePage.prevPage)" aria-label="Previous">
+                                    <i class="fa fa-angle-left"></i>&nbsp;Previous
+                                </a>
+                            </li>
+
+                            <li class="page-item" v-for="num in articlePage.navPageNums"
+                                :class="{ active: articlePage.pageNum == num }">
+                                <a @click="load(num)">
+                                    {{ num }}</i>
+                                </a>
+                            </li>
+                            <li v-if="articlePage.hasNextPage">
+                                <a type="button" class="page-link" @click="load(articlePage.nextPage)">
+                                    Next&nbsp;<i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li><span>Total {{articlePage.totalPages}} Pages</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+#include('./footer.html')
+<script >
+    var tale = new $.tale();
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            articlePage: {},
+            isLoading: true,
+            search: {
+                type: 'post',
+                title:'',
+                status: '',
+                categories: '',
+                page: 1
+            },
+            categories:[]
+        },
+        beforeCreate: function () {
+            vueLoding = this.$loading.show();
+        },
+        mounted: function () {
+            this.loadOnce();
+            this.load(1);
+        },
+        methods: {
+            loadOnce: function(){
+                var $vm = this;
+                tale.get({
+                    url: '/admin/api/categories',
+                    success: function (data) {
+                        $vm.categories = data.payload
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert(result.msg || 'Failed load');
+                    }
+                });
+            },
+            load: function (page) {
+                var $vm = this;
+                $vm.search.page = page;
+
+                tale.get({
+                    url: '/admin/api/articles',
+                    data: $vm.search,
+                    success: function (data) {
+                        $vm.articlePage = data.payload
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert(error || 'Failed load');
+                    }
+                });
+            },
+            deleteArticle: function (cid) {
+                var $vm = this;
+                tale.alertConfirm({
+                    title: 'Sure to remove?',
+                    then: function () {
+                        tale.post({
+                            url: '/admin/api/article/delete/' + cid,
+                            success: function (result) {
+                                if (result && result.success) {
+                                    tale.alertOk('Removed');
+                                    $vm.load(1);
+                                } else {
+                                    tale.alertError(result.msg || 'Fail to remove');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+    $(document).ready(function () {
+        vm.isLoading = false;
+        vueLoding.hide();
+    });
+</script>
+
+</body>
+</html>

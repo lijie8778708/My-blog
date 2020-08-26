@@ -1,0 +1,254 @@
+#include('./header.html',{active:'setting', title:'System Setting'})
+<link href="${cdnURL()}/plugins/toggles/toggles.css" rel="stylesheet">
+
+<div id="app" class="row" v-cloak>
+    <loading :active.sync="isLoading" :can-cancel="true"></loading>
+    <div class="col-lg-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">System Setting</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel panel-color panel-inverse">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Wen Setting</h3>
+                            </div>
+                            <div class="panel-body">
+                                <form class="form-horizontal" role="form" id="global-form">
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Address</label>
+                                        <div class="col-md-9">
+                                            <input type="text" v-model="options.site_url" class="form-control" placeholder="Address" required aria-required="true"/>
+                                            <span class="help-block"><small>Stay same with the domain。</small></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Sub Title</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" v-model="options.site_title" placeholder="Sub Title" required aria-required="true"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Sub Title</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" v-model="options.site_subtitle" placeholder="Sub Title" required aria-required="true"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Description</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" v-model="options.site_description" placeholder="Description" required aria-required="true"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Keyword</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" v-model="options.site_keywords" placeholder="Keyword" required aria-required="true"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="clearfix pull-right">
+                                        <button type="button" class="btn btn-inverse waves-effect waves-light" @click="saveSetting">
+                                            Saved
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel panel-color panel-inverse">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Advance Setting</h3>
+                            </div>
+                            <div class="panel-body">
+                                <form class="form-horizontal" role="form" id="advanced-form">
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">CND Address</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" name="cdnURL" placeholder="CDN地址" />
+                                            <span class="help-block"><small>This is for static files</small></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Clean Cache</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" name="cacheKey" placeholder="Provide prefix of the cache"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Black List</label>
+                                        <div class="col-md-9">
+                                            <textarea rows="3" class="form-control" v-model="options.site_block_ips" name="blockIps" placeholder="Enter IP，like：123.123.33.23,123.123.33.24"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Uninstall tool</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" name="pluginName" placeholder="Provide tool's name"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Allow Reinstall</label>
+                                        <div class="col-md-9">
+                                            <div id="allowInstall" class="toggle toggle-success"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Allow comment audit</label>
+                                        <div class="col-md-9">
+                                            <div id="allowCommentAudit" class="toggle toggle-success"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label">Public CDN</label>
+                                        <div class="col-md-9">
+                                            <div id="allowCloudCDN" class="toggle toggle-success"></div>
+                                            <span class="help-block"><small>Actice this, static will use <code>cdn.bootcss.com</code> load</small></span>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="allowInstall" v-model="allowInstall"/>
+                                    <input type="hidden" name="allowCommentAudit" v-model="allowCommentAudit"/>
+                                    <input type="hidden" name="allowCloudCDN" v-model="allowCloudCDN"/>
+
+                                    <div class="clearfix pull-right">
+                                        <button type="button" class="btn btn-inverse waves-effect waves-light" @click="saveAdvanced">
+                                            Saved
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+#include('./footer.html')
+<script src="${cdnURL()}/plugins/jquery-toggles/2.0.4/toggles.min.js"></script>
+<script >
+    var tale = new $.tale();
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            options: {},
+            allowInstall: '',
+            allowCommentAudit: '',
+            allowCloudCDN: '',
+            isLoading: true
+        },
+        beforeCreate: function(){
+            vueLoding = this.$loading.show();
+        },
+        mounted: function () {
+            this.load();
+        },
+        methods: {
+            load: function () {
+                var $vm = this;
+                tale.get({
+                    url: '/admin/api/options',
+                    success: function (data) {
+                        $vm.options = data.payload;
+                        $vm.allowInstall = data.payload.allow_install;
+                        $vm.allowCommentAudit = data.payload.allow_comment_audit;
+                        $vm.allowCloudCDN = data.payload.allow_cloud_CDN;
+
+                        $('#allowInstall').toggles({
+                            on: $vm.allowInstall === 'true',
+                            text: {
+                                on: 'On',
+                                off: 'Off'
+                            }
+                        });
+
+                        $('#allowCommentAudit').toggles({
+                            on: $vm.allowCommentAudit === 'true',
+                            text: {
+                                on: 'On',
+                                off: 'Off'
+                            }
+                        });
+
+                        $('#allowCloudCDN').toggles({
+                            on: $vm.allowCloudCDN === 'true',
+                            text: {
+                                on: 'On',
+                                off: 'Off'
+                            }
+                        });
+
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert(error || 'Failed load');
+                    }
+                });
+            },
+            saveSetting: function () {
+                var $vm = this;
+                var param = tale.copy($vm.options);
+                tale.postWithForm({
+                    url : '/admin/api/options/save',
+                    data: param,
+                    success: function (result) {
+                        if(result && result.success){
+                            tale.alertOk('Saved');
+                            $vm.load();
+                        } else {
+                            tale.alertError(result.msg || 'Failed');
+                        }
+                    }
+                });
+            },
+            saveAdvanced: function () {
+                var $vm = this;
+                var param = $('#advanced-form').serialize();
+                tale.post({
+                    url: '/admin/api/advanced/save',
+                    data: param,
+                    success: function (result) {
+                        if (result && result.success) {
+                            tale.alertOk('Saved');
+                            $vm.load();
+                        } else {
+                            tale.alertError(result.msg || 'Failed');
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+    $('#allowInstall').on('toggle', function (e, active) {
+        vm.allowInstall = active;
+    });
+
+    $('#allowCommentAudit').on('toggle', function (e, active) {
+        vm.allowCommentAudit = active;
+    });
+
+    $('#allowCloudCDN').on('toggle', function (e, active) {
+        vm.allowCloudCDN = active;
+    });
+
+    $(document).ready(function () {
+        vm.isLoading = false;
+        vueLoding.hide();
+    });
+
+</script>
+</body>
+</html>

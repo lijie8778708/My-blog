@@ -1,0 +1,88 @@
+#include('./header.html',{active:'themes', title:'Theme Management'})
+<div id="app" class="row" v-cloak>
+    <loading :active.sync="isLoading" :can-cancel="true"></loading>
+    <div class="col-lg-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Theme Management</h3>
+            </div>
+            <div class="panel-body">
+                <div class="col-md-3 text-center m-t-10" v-for="item in themes">
+                    <img class="attach-img bx-shadow" :src="'/templates/themes/' + item.name + '/screenshot.png'" width="300" height="200" :title="item.name"/>
+                    <div class="clearfix m-t-10">
+                        Theme：<span>{{item.name}}</span> <mark v-if="item.name == '${siteTheme()}'">（Current）</mark>
+                    </div>
+                    <div class="clearfix m-t-10">
+
+                        <a v-if="item.name == '${siteTheme()}' && item.hasSetting" class="btn btn-info" href="/admin/theme/setting"><span>Theme Setting</span></a>
+
+                        <button v-if="item.name != '${siteTheme()}'" @click="active(item.name)" type="button" class="btn btn-danger btn-sm waves-effect waves-light m-t-5">
+                            <i class="fa fa-check-circle"></i> <span>Active</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+#include('./footer.html')
+<script >
+    var tale = new $.tale();
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            themes: [],
+            isLoading: true
+        },
+        beforeCreate: function(){
+            vueLoding = this.$loading.show();
+        },
+        mounted: function () {
+            this.load();
+        },
+        methods: {
+            load: function(){
+                var $vm = this;
+                tale.get({
+                    url: '/admin/api/themes',
+                    success: function (data) {
+                        $vm.themes = data.payload
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert(error || 'Failed load');
+                    }
+                });
+            },
+            active: function (name) {
+                var $vm = this;
+                tale.alertConfirm({
+                    title:'Active?',
+                    then: function () {
+                        tale.post({
+                            url : '/admin/api/themes/active',
+                            data: {siteTheme: name},
+                            success: function (result) {
+                                if(result && result.success){
+                                    tale.alertOk('Actived');
+                                    $vm.load();
+                                } else {
+                                    tale.alertError(result.msg || 'Failed');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+    $(document).ready(function () {
+        vm.isLoading = false;
+        vueLoding.hide();
+    });
+
+</script>
+</body>
+</html>
